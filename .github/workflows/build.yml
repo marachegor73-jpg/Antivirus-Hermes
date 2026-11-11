@@ -1,0 +1,90 @@
+name: Build HERMES
+
+on:
+  push:
+    branches: ['**']
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Test safety checks
+        run: dotnet run --project Hermes.Tests/Hermes.Tests.csproj -c Release
+      - name: Build standalone Windows executable
+        run: >-
+          dotnet publish Hermes.Desktop/Hermes.Desktop.csproj
+          -c Release -r win-x64 --self-contained true
+          -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:EnableWindowsTargeting=true -p:DebugType=None -o dist
+      - name: Launch packaged app and render every page
+        shell: pwsh
+        run: |
+          $smokePath = Join-Path $env:RUNNER_TEMP 'hermes-smoke'
+          New-Item -ItemType Directory -Force -Path $smokePath | Out-Null
+          $executable = (Resolve-Path dist/HERMES.exe).Path
+          $process = Start-Process -FilePath $executable -ArgumentList @('--smoke-test', "`"$smokePath`"") -PassThru
+          if (-not $process.WaitForExit(30000)) {
+            $process.Kill($true)
+            throw 'Packaged app did not complete its smoke test within 30 seconds.'
+          }
+          if ($process.ExitCode -ne 0) { throw "Packaged app smoke test failed with exit code $($process.ExitCode)." }
+          $screenshots = @(Get-ChildItem -Path $smokePath -Filter '*.png')
+          if ($screenshots.Count -ne 5) { throw "Expected screenshots for all five application pages; found $($screenshots.Count)." }
+          if (-not (Test-Path (Join-Path $smokePath 'result.txt'))) { throw 'Packaged app did not write its successful smoke-test result.' }
+      - name: Save Windows interface screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: HERMES-interface
+          path: ${{ runner.temp }}/hermes-smoke
+          if-no-files-found: warn
+      - name: Calculate SHA-256
+        shell: pwsh
+        run: |
+          $digest = (Get-FileHash dist/HERMES.exe -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$digest  HERMES.exe" | Set-Content -Encoding ascii dist/SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: HERMES-win-x64
+          path: |
+            dist/HERMES.exe
+            dist/SHA256SUMS.txt
+          if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: HERMES-win-x64
+          path: dist
+      - name: Publish Windows download
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          @'
+          HERMES для Windows 10/11 x64. Скачайте HERMES.exe в Assets; установка .NET не требуется.
+
+          Проверка угроз использует установленный Microsoft Defender. Наблюдение за загрузками работает при запущенном приложении. Очистка и завершение процессов выполняются после подтверждения пользователя.
+
+          Сборка без цифровой подписи. Контрольная сумма находится в SHA256SUMS.txt.
+          '@ | Set-Content -Encoding utf8 "$env:RUNNER_TEMP/hermes-release-notes.txt"
+          gh release create "$env:GITHUB_REF_NAME" dist/HERMES.exe dist/SHA256SUMS.txt --verify-tag --title "HERMES $env:GITHUB_REF_NAME" --notes-file "$env:RUNNER_TEMP/hermes-release-notes.txt"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hermes.Core", "Hermes.Core\Hermes.Core.csproj", "{72B291C8-B2A5-4DFF-926B-524F97721F99}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hermes.Desktop", "Hermes.Desktop\Hermes.Desktop.csproj", "{C6F14A3B-6063-43BB-8DC7-FFA9A6761C74}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hermes.Tests", "Hermes.Tests\Hermes.Tests.csproj", "{2FE11C5C-333C-47A4-BEA7-508667DF9215}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{72B291C8-B2A5-4DFF-926B-524F97721F99}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{72B291C8-B2A5-4DFF-926B-524F97721F99}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{72B291C8-B2A5-4DFF-926B-524F97721F99}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{72B291C8-B2A5-4DFF-926B-524F97721F99}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C6F14A3B-6063-43BB-8DC7-FFA9A6761C74}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C6F14A3B-6063-43BB-8DC7-FFA9A6761C74}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C6F14A3B-6063-43BB-8DC7-FFA9A6761C74}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C6F14A3B-6063-43BB-8DC7-FFA9A6761C74}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2FE11C5C-333C-47A4-BEA7-508667DF9215}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2FE11C5C-333C-47A4-BEA7-508667DF9215}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2FE11C5C-333C-47A4-BEA7-508667DF9215}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2FE11C5C-333C-47A4-BEA7-508667DF9215}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
